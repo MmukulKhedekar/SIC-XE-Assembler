@@ -127,7 +127,6 @@ void format3(std::string s){
     std::string opcode = s.substr(0, 2);
 
     bool check = true;
-    if (h[11] == '1') check &= false;
 
     int n = (h[6] == '1');
     int i = (h[7] == '1');
@@ -184,6 +183,7 @@ void format3(std::string s){
         check &= mp[opcode];
 
         if (b == 1 and p == 1) check &= false;
+        if (e == 1) check &= false;
 
         if (check){
             std::cout << GREEN << "Valid Instruction!" << RESET << '\n';
@@ -309,9 +309,6 @@ void format3(std::string s){
             } else {
                 std::cout << " => Indexed Addressing Mode" << RESET << '\n';
             }
-            if (h[11] == '1'){
-                std::cout << RED << "Extended Bit Set => Wrong Instruction Format" << RESET << '\n';
-            }
             if (!mp[opcode]){
                 std::cout << RED << "Invalid Opcode Provided" << RESET << '\n';
             }
@@ -370,6 +367,7 @@ void format3(std::string s){
 
         if (x == 1) check &= false;
         if (b == 1 and p == 1) check &= false;
+        if (e == 1) check &= false;
 
         if (check){
             std::cout << GREEN << "Valid Instruction!" << RESET << '\n';
@@ -483,6 +481,7 @@ void format3(std::string s){
 
         if (x == 1) check &= false;
         if (b == 1 and p == 1) check &= false;
+        if (e == 1) check &= false;
 
         if (check){
             std::cout << GREEN << "Valid Instruction!" << RESET << '\n';
