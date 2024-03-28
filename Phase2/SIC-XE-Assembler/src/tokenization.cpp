@@ -1,7 +1,7 @@
 #include "../include/tokenization.h"
 
 std::vector<std::vector<std::string>> parse(const std::string &FILE_NAME) {
-    std::ifstream file = file(FILE_NAME);
+    std::ifstream file(FILE_NAME);
     if (!file.is_open()) {
         // GENERATE ERROR MESSAGE HERE: UNABLE TO OPEN THE FILE!
     }

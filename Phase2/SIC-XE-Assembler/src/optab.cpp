@@ -1,7 +1,5 @@
 #include "../include/optab.h"
 
-std::map<std::string, std::pair<std::string, int>> optable;
-
 void initialise_optable() {
     // MNEMONICS SUPPORTED BY FORMAT 1
     add_to_optable("FLOAT", "C0", 1);

@@ -1,7 +1,5 @@
 #include "../include/reg.h"
 
-std::map<std::string, int> REG;
-
 void initialise_registers() {
     REG["A"] = 0;
     REG["X"] = 1;

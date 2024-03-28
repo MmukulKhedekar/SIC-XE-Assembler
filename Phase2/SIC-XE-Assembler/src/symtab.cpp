@@ -1,13 +1,11 @@
 #include "../include/symtab.h"
 
-std::map<std::string, std::string> symbol_table;
-
 void clear_symbol_table() {
     symbol_table.clear();
 }
 
 bool exists(std::string &LABEL) {
-    return (symbol_table[LABEL] == "") ? (false) : (true);
+    return (symbol_table[LABEL] > 0) ? (true) : (false);
 }
 
 void add_symbol(std::string &LABEL, std::string &LOCCTR) {

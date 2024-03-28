@@ -3,6 +3,8 @@
 
 #include "imports.h"
 
+std::map<std::string, int> REG;
+
 void initialise_registers();
 
 #endif 
