@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <map>
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
