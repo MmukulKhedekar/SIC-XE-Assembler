@@ -80,7 +80,7 @@ void initialise_optable() {
     add_to_optable("SSK", "EC", 3);
 }
 
-void add_to_optable(std::string &MNEMONIC, std::string &OPCODE, int LENGTH) {
+void add_to_optable(std::string &MNEMONIC, std::string &OPCODE, long long int LENGTH) {
     optable[MNEMONIC] = std::make_pair(OPCODE, LENGTH);
 }
 

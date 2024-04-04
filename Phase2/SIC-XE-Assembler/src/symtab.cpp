@@ -8,7 +8,7 @@ bool exists(std::string &LABEL) {
     return (symbol_table[LABEL] > 0) ? (true) : (false);
 }
 
-void add_symbol(std::string &LABEL, std::string &LOCCTR) {
+void add_symbol(std::string &LABEL, long long int LOCCTR) {
     if (!exists(LABEL)) {
         symbol_table[LABEL] = LOCCTR; 
         return;
@@ -16,7 +16,7 @@ void add_symbol(std::string &LABEL, std::string &LOCCTR) {
     // ELSE GENERATE AN ERROR MESSAGE: SYMBOL ALREADY EXISTS!
 }
 
-std::string get_locctr(std::string &LABEL) {
+long long int get_locctr(std::string &LABEL) {
     if (exists(LABEL)) {
         return symbol_table[LABEL];
     }

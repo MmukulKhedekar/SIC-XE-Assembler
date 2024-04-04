@@ -15,13 +15,15 @@ void make_lower_case(std::string &s) {
     }
 }
 
-std::string int_to_string(int x, int length) {
+std::string int_to_string(long long int x, long long int length) {
     std::string s = "";
-    while (x > 0) {
-        long long int res = x % 10;
+    
+    long long int y = x;
+    while (y > 0) {
+        long long int res = y % 10;
         
         s = (char)(res + '0') + s;
-        x /= 10;
+        y /= 10;
     }
 
     while (s.length() < length) {
@@ -31,11 +33,12 @@ std::string int_to_string(int x, int length) {
     return s;
 }
 
-std::string int_to_hex(int x, int length) {
+std::string int_to_hex(long long int x, long long int length) {
     std::string s = "";
 
-    while (x > 0) {
-        long long int res = x % 16;
+    long long int y = x;
+    while (y > 0) {
+        long long int res = y % 16;
         if (res >= 10) {
             res -= 10;
             s = (char)(res + 'A') + s;
@@ -43,7 +46,7 @@ std::string int_to_hex(int x, int length) {
             s = (char)(res + '0') + s;
         }
 
-        x /= 16;
+        y /= 16;
     }
 
     while (s.length() < length) {
@@ -53,14 +56,15 @@ std::string int_to_hex(int x, int length) {
     return s;
 }
 
-std::string int_to_binary(int x, int length) {
+std::string int_to_binary(long long int x, long long int length) {
     std::string s = "" ;
 
-    while (x > 0) {
-        long long int res = x % 2;
+    long long int y = x;
+    while (y > 0) {
+        long long int res = y % 2;
         
         s = (char)(res + '0') + s;
-        x /= 2;
+        y /= 2;
     }
 
     while (s.length() < length) {
@@ -93,6 +97,39 @@ long long int word_size(std::string WORD) {
         else break;
     }
     return (len + 1) / 2;
+}
+
+long long int hex_to_int(std::string &s) {
+    std::map<char, long long int> hex_values; 
+    hex_values['0'] = 0;
+    hex_values['1'] = 1;
+    hex_values['2'] = 2;
+    hex_values['3'] = 3;
+    hex_values['4'] = 4;
+    hex_values['5'] = 5;
+    hex_values['6'] = 6;
+    hex_values['7'] = 7;
+    hex_values['8'] = 8;
+    hex_values['9'] = 9;
+    hex_values['A'] = 10;
+    hex_values['B'] = 11;
+    hex_values['C'] = 12;
+    hex_values['D'] = 13;
+    hex_values['E'] = 14;
+    hex_values['F'] = 15;
+
+    std::string t = s;
+    long long int resultant = 0;
+    long long int position = 1;
+
+    while (t.size() > 0) {
+        char c = t[t.size() - 1];
+
+        resultant += hex_values[c] * position;
+        position *= 16;
+    }
+
+    return resultant;
 }
 
 // ADD MORE UTILS IF NECESSARY
