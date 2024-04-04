@@ -1,4 +1,4 @@
-#include "../include/tokenization.h"
+#include "../include/tokenization.hpp"
 
 std::vector<std::vector<std::string>> parse(const std::string &FILE_NAME) {
     std::ifstream file(FILE_NAME);

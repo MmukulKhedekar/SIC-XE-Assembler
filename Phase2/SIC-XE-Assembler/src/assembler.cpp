@@ -1,10 +1,10 @@
-#include "../include/assembler.h"
-#include "../include/tokenization.h"
-#include "../include/optab.h"
-#include "../include/symtab.h"
-#include "../include/reg.h"
-#include "../include/utils.h"
-#include "../include/validity.h"
+#include "../include/assembler.hpp"
+#include "../include/tokenization.hpp"
+#include "../include/optab.hpp"
+#include "../include/symtab.hpp"
+#include "../include/reg.hpp"
+#include "../include/utils.hpp"
+#include "../include/validity.hpp"
 
 long long int LOCCTR = -1;
 std::vector<std::pair<long long int, std::vector<std::string>>> first_pass_parse;
@@ -13,6 +13,10 @@ long long int PC = 0LL;
 long long int B = 0LL;
 
 void first_pass(const std::string &FILE_NAME) {
+    LOCCTR = -1;
+    PC = 0LL;
+    B = 0LL;
+
     first_pass_parse.clear();
     if (!optable.size()) {
         initialise_optable();
@@ -104,30 +108,167 @@ void first_pass(const std::string &FILE_NAME) {
 
 long long int n = 0, i = 0, x = 0, b = 0, p = 0, e = 0;
 
-std::string format1(std::vector<std::string> &LINES) {
+std::string format1(std::string &MNEMONIC, std::string &OPERAND) {
+    std::string ANS = find_in_optable(MNEMONIC);
 
+    return ANS;
 }
 
-std::string format2(std::vector<std::string> &LINES) {
+std::string format2(std::string &MNEMONIC, std::string &OPERAND) {
+    std::string ANS = find_in_optable(MNEMONIC);
 
+    if (OPERAND.length() == 3) {
+        ANS += reg[OPERAND[0]];
+        ANS += reg[OPERAND[2]];
+    } else if (OPERAND.length() == 1) {
+        ANS += '0';
+        ANS += reg[OPERAND[0]];
+
+        // CHECK FOR 'CLEAR', 'SVC', 'TIXR', 'SHIFTL', 'SHIFTR'
+    }
+    
+    return ANS;
 }
 
-std::string format3(std::vector<std::string> &LINES) {
+std::string format3(std::string &MNEMONIC, std::string &OPERAND) {
+    std::string ANS = find_in_optable(MNEMONIC);
 
+    p = 1;
+    // ADD SUPPORT FOR BASE REGISTER
+
+    if (OPERAND[OPERAND.length() - 1] == 'X') {
+        x = 1;
+        OPERAND = OPERAND.substr(0, OPERAND.length() - 2);
+    }
+
+    long long int target = hex_to_int(ANS);
+
+    if (OPERAND[0] == '@') {
+        n = 1;
+        i = 0;
+
+        target += 2;
+        ANS = int_to_hex(target, 2);
+
+    } else if (OPERAND[0] == '#') {
+        n = 0;
+        i = 1;
+
+        target += 1;
+        ANS = int_to_hex(target, 2);
+
+    } else {
+        n = 1;
+        i = 1;
+
+        target += 3;
+        ANS = int_to_hex(target, 2);
+
+    }
+
+    // ADD SUPPORT FOR BASE RELATIVE
+    if (x == 0) {
+        ANS += int_to_hex(2, 1);
+    } else if (x == 1) {
+        ANS += int_to_hex(10, 1);
+    }
+
+    // ADD SUPPORT FOR INDIRECT AND IMMEDIATE ADDRESSING
+
+    long long int diff = (get_locctr(OPERAND) - PC);
+    if (diff >= 0) {
+        diff += 3;
+    } else {
+        diff = (1LL << 12) + diff;
+        diff -= 3;
+    }
+
+    ANS += int_to_hex(diff, 3);
+    return ANS;
 }
 
-std::string format4(std::vector<std::string> &LINES) {
+std::string format4(std::string &MNEMONIC, std::string &OPERAND) {
+    e = 1;
 
+    // GENERATE MODIFICATION RECORDS HERE 
+
+    std::string ANS = find_in_optable(MNEMONIC);
+
+    // ADD SUPPORT FOR BASE REGISTER
+
+    if (OPERAND[OPERAND.length() - 1] == 'X') {
+        x = 1;
+        OPERAND = OPERAND.substr(0, OPERAND.length() - 2);
+    }
+
+    long long int target = hex_to_int(ANS);
+
+    if (OPERAND[0] == '@') {
+        n = 1;
+        i = 0;
+
+        target += 2;
+        ANS = int_to_hex(target, 2);
+
+    } else if (OPERAND[0] == '#') {
+        n = 0;
+        i = 1;
+
+        target += 1;
+        ANS = int_to_hex(target, 2);
+
+    } else {
+        n = 1;
+        i = 1;
+
+        target += 3;
+        ANS = int_to_hex(target, 2);
+
+    }
+
+    // ADD SUPPORT FOR BASE RELATIVE
+    if (x == 0) {
+        ANS += int_to_hex(1, 1);
+    } else if (x == 1) {
+        ANS += int_to_hex(9, 1);
+    }
+
+    // ADD SUPPORT FOR INDIRECT AND IMMEDIATE ADDRESSING
+
+    long long int diff = get_locctr(OPERAND);
+
+    ANS += int_to_hex(diff, 5);
+    return ANS;
 }
 
 std::string direct_flow(long long int location, std::string &SOURCE, std::string &OPERAND) {
-    
+    if (SOURCE[0] == '+') {
+        NEW_SOURCE = SOURCE.substr(1, SOURCE.size() - 1);
+        return format4(NEW_SOURCE, OPERAND);
+    } 
+
+    int len = mnemonic_length(SOURCE);
+
+    if (len == 3) {
+
+        return format3(SOURCE, OPERAND);
+    } else if (len == 2) {
+
+        return format2(SOURCE, OPERAND);
+    } else if (len == 1) {
+
+        return format1(SOURCE, OPERAND);
+    } else {
+
+        // GENERATE ERROR: BECAUSE MNEMONIC DOES NOT EXIST IN 
+    }
 }
 
+std::vector<std::string> header_record;
+std::vector<std::pair<long long int, std::string>> text_record;
+std::vector<std::string> end_record;
+
 void second_pass() {
-    std::vector<std::string> header_record;
-    std::vector<std::pair<long long int, std::string>> text_record;
-    std::vector<std::string> end_record;
 
     for (int j = 0; j < first_pass_parse.size(); j++) {
         n = 0, i = 0, x = 0, b = 0, p = 0, e = 0;
@@ -149,6 +290,34 @@ void second_pass() {
 
                 end_record.push_back(END);
             } else {
+
+                // ADD FOR WORD AND BYTE
+                if (first_pass_parse[j].second[1] == "RESW") continue;
+                else if (first_pass_parse[j].second[1] == "RESB") continue;
+                else if (first_pass_parse[j].second[1] == "BYTE") {
+                    if (first_pass_parse[j].second[2][0] == 'C') {
+                        std::string object_code = "";
+
+                        for (int y = 0; y < first_pass_parse[j].second[2].length() - 3; y++) {
+                            object_code += int_to_hex((int)(first_pass_parse[j].second[2][y + 2]), 2);
+                        }
+                        text_record.push_back({first_pass_parse[j].first, object_code});
+
+                        continue;
+                    } else if (first_pass_parse[j].second[2][0] == 'X') {
+                        std::string object_code = first_pass_parse[j].second[2].substr(2, first_pass_parse[j].second[2].length() - 3);
+                        text_record.push_back({first_pass_parse[j].first, object_code});
+                    
+                        continue;   
+                    } else {
+                        // GENERATE ERROR MESSAGE: WHAT ARE YOU TRYING TO STORE
+                    }
+                } else if (first_pass_parse[j].second[1] == "WORD") {
+                    std::string object_code = int_to_hex(std::stoi(first_pass_parse[j].second[2]), 6);
+                    text_record.push_back({first_pass_parse[j].first, object_code});
+                    
+                    continue;
+                }
                 
                 std::string object_code = direct_flow(first_pass_parse[j].first, first_pass_parse[j].second[1], first_pass_parse[j].second[2]);
                 text_record.push_back({first_pass_parse[j].first, object_code});
@@ -159,6 +328,34 @@ void second_pass() {
                 // DEALT ALREADY
             } else {
 
+                // ADD FOR WORD AND BYTE
+                if (first_pass_parse[j].second[0] == "RESW") continue;
+                else if (first_pass_parse[j].second[0] == "RESB") continue;
+                else if (first_pass_parse[j].second[0] == "BYTE") {
+                    if (first_pass_parse[j].second[1][0] == 'C') {
+                        std::string object_code = "";
+
+                        for (int y = 0; y < first_pass_parse[j].second[1].length() - 3; y++) {
+                            object_code += int_to_hex((int)(first_pass_parse[j].second[1][y + 2]), 2);
+                        }
+                        text_record.push_back({first_pass_parse[j].first, object_code});
+
+                        continue;
+                    } else if (first_pass_parse[j].second[1][0] == 'X') {
+                        std::string object_code = first_pass_parse[j].second[1].substr(2, first_pass_parse[j].second[1].length() - 3);
+                        text_record.push_back({first_pass_parse[j].first, object_code});
+                    
+                        continue;   
+                    } else {
+                        // GENERATE ERROR MESSAGE: WHAT ARE YOU TRYING TO STORE
+                    }
+                } else if (first_pass_parse[j].second[1] == "WORD") {
+                    std::string object_code = int_to_hex(std::stoi(first_pass_parse[j].second[1]), 6);
+                    text_record.push_back({first_pass_parse[j].first, object_code});
+                    
+                    continue;
+                }
+                
                 std::string object_code = direct_flow(first_pass_parse[j].first, first_pass_parse[j].second[0], first_pass_parse[j].second[1]);
                 text_record.push_back({first_pass_parse[j].first, object_code});
                 // ADD METHODS TO DEAL WITH ALL FOUR FORMATS

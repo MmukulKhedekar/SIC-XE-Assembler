@@ -1,4 +1,4 @@
-#include "../include/reg.h"
+#include "../include/reg.hpp"
 
 void initialise_registers() {
     REG["A"] = 0;

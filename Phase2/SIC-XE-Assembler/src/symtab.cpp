@@ -1,4 +1,4 @@
-#include "../include/symtab.h"
+#include "../include/symtab.hpp"
 
 void clear_symbol_table() {
     symbol_table.clear();

@@ -1,4 +1,4 @@
-#include "../include/utils.h"
+#include "../include/utils.hpp"
 void make_upper_case(std::string &s) {
     for (auto &u: s) {
         if ((int)(u) >= 97 and (int)(u) <= 96 + 26) {

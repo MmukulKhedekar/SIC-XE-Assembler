@@ -1,7 +1,7 @@
 #ifndef REG_H 
 #define REG_H 
 
-#include "imports.h"
+#include "imports.hpp"
 
 std::map<std::string, int> REG;
 

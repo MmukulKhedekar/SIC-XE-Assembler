@@ -1,4 +1,4 @@
-#include "../include/optab.h"
+#include "../include/optab.hpp"
 
 void initialise_optable() {
     // MNEMONICS SUPPORTED BY FORMAT 1
