@@ -1,7 +1,14 @@
 #ifndef OPTAB_H
 #define OPTAB_H
 
-#include "imports.hpp"
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <utility>
+#include <vector>
+#include <string>
+#include <array>
+#include <map>
 
 std::map<std::string, std::pair<std::string, long long int>> optable;
 

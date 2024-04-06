@@ -1,7 +1,14 @@
 #ifndef SYMTAB_H 
 #define SYMTAB_H 
 
-#include "imports.hpp"
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <utility>
+#include <vector>
+#include <string>
+#include <array>
+#include <map>
 
 std::map<std::string, long long int> symbol_table;
 

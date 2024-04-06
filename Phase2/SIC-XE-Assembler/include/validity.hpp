@@ -1,6 +1,13 @@
 #ifndef VALIDITY_H
 #define VALIDITY_H 
 
-#include "imports.hpp"
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <utility>
+#include <vector>
+#include <string>
+#include <array>
+#include <map>
 
 #endif 

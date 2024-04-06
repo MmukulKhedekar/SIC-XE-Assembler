@@ -1,7 +1,14 @@
 #ifndef UTILS_H 
 #define UTILS_H 
 
-#include "imports.hpp"
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <utility>
+#include <vector>
+#include <string>
+#include <array>
+#include <map>
 
 void make_upper_case(std::string &s);
 void make_lower_case(std::string &s);
