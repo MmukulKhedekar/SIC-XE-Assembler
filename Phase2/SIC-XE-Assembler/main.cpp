@@ -382,7 +382,7 @@ std::string format2(std::string &MNEMONIC, std::string &OPERAND) {
     return ANS;
 }
 
-std::string format3(std::string &MNEMONIC, std::string &OPERAND) {
+std::string format3(std::string MNEMONIC, std::string OPERAND) {
     std::string ANS = find_in_optable(MNEMONIC);
 
     p = 1;
@@ -420,14 +420,14 @@ std::string format3(std::string &MNEMONIC, std::string &OPERAND) {
     if (OPERAND[0] == '#') {
         // IMMEDIATE ADDRESSING 
 
-        std::string small = OPERAND.substr(1, OPERAND.length() - 1);
-        if (get_locctr(small) != -69) {
+        OPERAND = OPERAND.substr(1, OPERAND.length() - 1);
+        if (get_locctr(OPERAND) != -69) {
             long long int diff = (get_locctr(OPERAND) - PC);
             if (diff < 0) {
                 diff = (1LL << 12) + diff;
             }
 
-            if (3 + int_to_hex(diff, 3).length() <= 6){ 
+            if ((3 + int_to_hex(diff, 3).length() <= 6) and (!(diff < 0))){ 
                 if (x == 0) {
                     ANS += int_to_hex(2, 1);
                 } else {
@@ -478,8 +478,7 @@ std::string format3(std::string &MNEMONIC, std::string &OPERAND) {
                 }
             } 
         } else {
-            std::string small = OPERAND.substr(1, OPERAND.length() - 1);
-            long long int diff = std::stoi(small);
+            long long int diff = std::stoi(OPERAND);
 
             if (diff < 0) {
                 diff = (1LL << 12) + diff;
@@ -509,6 +508,7 @@ std::string format3(std::string &MNEMONIC, std::string &OPERAND) {
 
     } else if (OPERAND[0] == '@') {
         // INDIRECT ADDRESSING
+        OPERAND = OPERAND.substr(1, OPERAND.length() - 1);
         
         if (get_locctr(OPERAND) == -69) {
 
@@ -587,7 +587,7 @@ std::string format3(std::string &MNEMONIC, std::string &OPERAND) {
             diff = (1LL << 12) + diff;
         }
 
-        if (3 + int_to_hex(diff, 3).length() <= 6){ 
+        if ((3 + int_to_hex(diff, 3).length() <= 6) and (!(diff < 0))){ 
             if (x == 0) {
                 ANS += int_to_hex(2, 1);
             } else {
@@ -642,7 +642,7 @@ std::string format3(std::string &MNEMONIC, std::string &OPERAND) {
     return ANS;
 }
 
-std::string format4(long long int LOCCTR, std::string &MNEMONIC, std::string &OPERAND) {
+std::string format4(long long int LOCCTR, std::string MNEMONIC, std::string OPERAND) {
     e = 1;
 
     // GENERATE MODIFICATION RECORDS HERE 
@@ -681,16 +681,72 @@ std::string format4(long long int LOCCTR, std::string &MNEMONIC, std::string &OP
 
     }
 
+/*  FEATURES TO ADD IN */
+    // ADD SUPPORT FOR INDIRECT AND IMMEDIATE ADDRESSING
+    // DO NOT GENERATE A MODIFICATION RECORD IF WE ARE USING IMMEDIATE ADDRESSING TYPE INSTEAD 
+
+    if (OPERAND[0] == '#') {
+        OPERAND = OPERAND.substr(1, OPERAND.length() - 1);
+        if (get_locctr(OPERAND) != -69) {
+            long long int diff = (get_locctr(OPERAND) - PC);
+            if (diff < 0) {
+                diff = (1LL << 20) + diff;
+            }
+
+            if ((3 + int_to_hex(diff, 5).length() <= 8) and (!(diff < 0))){ 
+                if (x == 0) {
+                    ANS += int_to_hex(3, 1);
+                } else {
+                    ANS += int_to_hex(11, 1);
+                }
+
+                ANS += int_to_hex(diff, 5);
+                return ANS;
+            } else {
+                if (b == 0) {
+                    
+                    // ADD SUPPORT TO SPECIFY WHAT LINE THE ERROR DETECTED LIES ON
+                    // ADD ERROR FOR BASE NOT SET + IMMEDIATE FORMAT 4 TYPE INSTRUCTION
+                } else {
+                    long long int diff = (get_locctr(OPERAND) - b);
+                    if (diff < 0) {
+                        diff = (1LL << 20) + diff;
+                    }
+
+                    if (x == 0) {
+                        ANS += int_to_hex(5, 1);
+                    } else {
+                        ANS += int_to_hex(13, 1);
+                    }
+
+                    ANS += int_to_hex(diff, 5);
+                    return ANS;
+                }
+            } 
+        } else {
+            long long int diff = std::stoi(OPERAND);
+
+            if (diff < 0) {
+                diff = (1LL << 20) + diff;
+            }
+
+            if (x == 0) {
+                ANS += int_to_hex(1, 1);
+            } else {
+                ANS += int_to_hex(9, 1);
+            }
+
+            ANS += int_to_hex(diff, 5);
+            return ANS;
+        }
+    }
+/*  FEATURES TO ADD IN */
+
     if (x == 0) {
         ANS += int_to_hex(1, 1);
     } else if (x == 1) {
         ANS += int_to_hex(9, 1);
     }
-
-/*  FEATURES TO ADD IN */
-    // ADD SUPPORT FOR INDIRECT AND IMMEDIATE ADDRESSING
-    // DO NOT GENERATE A MODIFICATION RECORD IF WE ARE USING IMMEDIATE ADDRESSING TYPE INSTEAD 
-/*  FEATURES TO ADD IN */
 
     long long int diff = get_locctr(OPERAND);
 
@@ -1029,6 +1085,12 @@ void first_pass(std::string &FILE_NAME) {
             }
             if (line[0] == "RSUB"){
                 LOCCTR += 3;
+            } else if (line[0] == "USE") {
+                std::string program_block_name = "default";
+
+                LOCCTR = add_to_program_block(program_block_name, LOCCTR);
+                first_pass_parse.push_back({LOCCTR, line});
+                continue;  
             } else {
                 // GENERATE ERROR MESSAGE: WHAT YOU DOIN
             }
@@ -1068,7 +1130,11 @@ void second_pass() {
         n = 0, i = 0, x = 0, p = 0, e = 0;
 
         if (j != (first_pass_parse.size() - 1)) {
-            PC = first_pass_parse[j + 1].first;
+            long long int j_ = j + 1;
+            while (first_pass_parse[j_].first == -2) j_++;
+            PC = first_pass_parse[j_].first;
+        } else {
+            continue;
         }
 
         if (first_pass_parse[j].first == -3) {
@@ -1338,8 +1404,20 @@ void print_out_first_pass() {
             }
             std::cout << '\n';
             continue;
+        } else if (lines.first == -2) {
+            std::cout << '\t';
+            std::cout << '\t';
+            std::cout << GREEN << lines.second[0] << '\t';
+            std::cout << BLUE << lines.second[1] << RESET << '\n';
+            continue;
+        } else if (lines.second[0] == "END") {
+            std::cout << '\t';
+            std::cout << '\t';
+            std::cout << GREEN << lines.second[0] << '\t';
+            std::cout << BLUE << lines.second[1] << RESET << '\n';
+            continue;
         }
-        
+
         if (lines.second.size() == 3) {
 
             if (lines.second[1] == "START") {
@@ -1393,7 +1471,6 @@ void print_out_first_pass() {
                 std::cout << GREEN << word  << '\t';
             }
             std::cout << '\n';
-            std::cout << '\n';
 
         }
     }
@@ -1407,8 +1484,30 @@ void print_out_second_pass() {
     sleep_duration(0);
 
     for (; text_pointer < text_record.size(); text_pointer++, fpp_pointer++) {
-        // std::cout << text_record[text_pointer].first << ' ' << text_record[text_pointer].second << '\n';
+
         while (text_record[text_pointer].first != first_pass_parse[fpp_pointer].first) {
+            if (first_pass_parse[fpp_pointer].first == -3) {
+                for (auto &word: first_pass_parse[fpp_pointer].second) {
+                    std::cout << word << ' ';
+                }
+                std::cout << '\n';
+                fpp_pointer++;
+                continue;
+            } else if (first_pass_parse[fpp_pointer].first == -2) {
+                std::cout << '\t';
+                std::cout << '\t';
+                std::cout << GREEN << first_pass_parse[fpp_pointer].second[0] << '\t';
+                std::cout << BLUE << first_pass_parse[fpp_pointer].second[1] << RESET << '\n';
+                fpp_pointer++;
+                continue;
+            } else if (first_pass_parse[fpp_pointer].second[0] == "END") {
+                std::cout << '\t';
+                std::cout << '\t';
+                std::cout << GREEN << first_pass_parse[fpp_pointer].second[0] << '\t';
+                std::cout << BLUE << first_pass_parse[fpp_pointer].second[1] << RESET << '\n';
+                fpp_pointer++;
+                continue;
+            }
             
             if (first_pass_parse[fpp_pointer].second.size() == 3) {
 
@@ -1467,11 +1566,33 @@ void print_out_second_pass() {
                     
                 }
                 std::cout << '\n';
-                std::cout << '\n';
 
             }
 
             fpp_pointer++;
+        }
+
+        if (first_pass_parse[fpp_pointer].first == -3) {
+            for (auto &word: first_pass_parse[fpp_pointer].second) {
+                std::cout << word << ' ';
+            }
+            std::cout << '\n';
+            fpp_pointer++;
+            continue;
+        } else if (first_pass_parse[fpp_pointer].first == -2) {
+            std::cout << '\t';
+            std::cout << '\t';
+            std::cout << GREEN << first_pass_parse[fpp_pointer].second[0] << '\t';
+            std::cout << BLUE << first_pass_parse[fpp_pointer].second[1] << RESET << '\n';
+            fpp_pointer++;
+            continue;
+        } else if (first_pass_parse[fpp_pointer].second[0] == "END") {
+            std::cout << '\t';
+            std::cout << '\t';
+            std::cout << GREEN << first_pass_parse[fpp_pointer].second[0] << '\t';
+            std::cout << BLUE << first_pass_parse[fpp_pointer].second[1] << RESET << '\n';
+            fpp_pointer++;
+            continue;
         }
 
         if (first_pass_parse[fpp_pointer].second.size() == 3) {
@@ -1532,10 +1653,32 @@ void print_out_second_pass() {
             }
             std::cout << WHITE << text_record[text_pointer].second;
             std::cout << '\n';
-            std::cout << '\n';
         }
     }
     while (fpp_pointer < first_pass_parse.size()) {
+        if (first_pass_parse[fpp_pointer].first == -3) {
+            for (auto &word: first_pass_parse[fpp_pointer].second) {
+                std::cout << word << ' ';
+            }
+            std::cout << '\n';
+            fpp_pointer++;
+            continue;
+        } else if (first_pass_parse[fpp_pointer].first == -2) {
+            std::cout << '\t';
+            std::cout << '\t';
+            std::cout << GREEN << first_pass_parse[fpp_pointer].second[0] << '\t';
+            std::cout << BLUE << first_pass_parse[fpp_pointer].second[1] << RESET << '\n';
+            fpp_pointer++;
+            continue;
+        } else if (first_pass_parse[fpp_pointer].second[0] == "END") {
+            std::cout << '\t';
+            std::cout << '\t';
+            std::cout << GREEN << first_pass_parse[fpp_pointer].second[0] << '\t';
+            std::cout << BLUE << first_pass_parse[fpp_pointer].second[1] << RESET << '\n';
+            fpp_pointer++;
+            continue;
+        }
+
         if (first_pass_parse[fpp_pointer].second.size() == 3) {
 
             if (first_pass_parse[fpp_pointer].second[1] == "START") {
@@ -1588,7 +1731,6 @@ void print_out_second_pass() {
             for (auto &word: first_pass_parse[fpp_pointer].second) {
                 std::cout << GREEN << word  << '\t';
             }
-            std::cout << '\n';
             std::cout << '\n';
 
         }
